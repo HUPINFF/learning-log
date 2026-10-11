@@ -46,12 +46,14 @@ jobs:
 
       - run: npm run build
 
-      # 顺手把 Pages 打开（enablement），省得你去 Settings 里手动点。
-      # 万一这步因为权限失败，去 Settings → Pages → Source 选 "GitHub Actions" 即可。
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
+      # 把 dist/ 打包成 Pages 能吃的 artifact。
+      #
+      # 这里本来还应该有一步 actions/configure-pages（顺手帮你把 Pages 打开）。
+      # 实测它必然失败：创建 Pages 站点需要仓库管理员权限，而 workflow 里的
+      # GITHUB_TOKEN 没有 —— 会以 "Resource not accessible by integration" 挂掉，
+      # 然后后面所有步骤被跳过。
+      # 所以：Pages 的开关只能你手动点一次（Settings → Pages → Source 选 GitHub Actions），
+      # 点完就永久生效，之后每次 push 全自动。
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

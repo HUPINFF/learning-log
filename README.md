@@ -70,8 +70,10 @@ npm run preview
 
 线上地址：**https://hupinff.github.io/learning-log/**
 
-> 第一次要确认仓库 **Settings → Pages → Source** 选的是 **GitHub Actions**。
-> workflow 里有一步会顺手打开它，万一那步没成功，手动点一下就行，之后不用再管。
+> **第一次需要你手动点一次**：仓库 **Settings → Pages → Source** 选 **GitHub Actions**。
+> 这一步没法自动化 —— 创建 Pages 站点要仓库管理员权限，而 workflow 里的 `GITHUB_TOKEN`
+> 没有（`actions/configure-pages` 的 `enablement` 会以 "Resource not accessible by
+> integration" 失败）。**点完永久生效**，之后每次 push 全自动，不用再管。
 
 ### 为什么不是 Vercel
 
