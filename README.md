@@ -62,14 +62,28 @@ npm run preview
 
 ---
 
-## 部署到 Vercel
+## 部署到 GitHub Pages
 
-1. 把这个文件夹推到 GitHub
-2. 打开 [vercel.com](https://vercel.com) → Add New → Project → 选中这个仓库
-3. Framework Preset 选 **Vite**（一般会自动识别），Build Command `npm run build`，Output Directory `dist`
-4. Deploy
+配置在 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)，已经弄好了。
 
-之后**每次 `git push` 都会自动重新部署**。写完一篇 → push → 几十秒后线上就更新了。
+**你只需要做一件事：`git push`。** 推上去之后 Actions 自动 build + 发布，一两分钟后线上就是最新的。
+
+线上地址：**https://hupinff.github.io/learning-log/**
+
+> 第一次要确认仓库 **Settings → Pages → Source** 选的是 **GitHub Actions**。
+> workflow 里有一步会顺手打开它，万一那步没成功，手动点一下就行，之后不用再管。
+
+### 为什么不是 Vercel
+
+`*.vercel.app` 在中国大陆是被针对性阻断的：TLS 握手时看到这个域名就当场重置连接 ——
+实测即使把真实 IP 直接填进 `--resolve`，也在 **0.16 秒**被掐断。挂加速器则换成另一种死法：
+请求经由加速节点出去，Vercel 看到的是机房 IP，直接 `403` + `X-Vercel-Mitigated: deny`。
+
+站本身完全没问题（check-host 从 8 个国家访问全部 `200 OK`），问题在于**国内打不开**。
+简历上放一个国内点不开的链接，比不放还伤，所以换到实测可直连的 GitHub Pages。
+
+换过来的成本是零：`base: './'` 和 hash 路由这两条早就把「部署到子路径」这件事解决了，
+项目站点的 `/learning-log/` 前缀自动就对，不用改任何配置。
 
 ---
 
@@ -78,6 +92,9 @@ npm run preview
 ```
 about.md             ← 「关于我」页的正文
 posts/               ← 你写的东西全在这里，一个日期一个文件
+.github/
+  workflows/
+    deploy.yml       ← 部署：push 到 main 就自动 build + 发布到 GitHub Pages
 src/
   posts.js           ← 扫描 posts/、解析标题和日期
   router.js          ← 路由（用 hash 模式，部署到哪都不用额外配置）

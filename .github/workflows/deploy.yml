@@ -1,0 +1,67 @@
+# 每次 push 到 main，自动构建并把 dist/ 发到 GitHub Pages。
+#
+# 为什么用 Actions，而不是「本地 build 完把 dist 推到 gh-pages 分支」？
+#   后者要你手动做两步：build、push。早晚有一天你会忘了 build 就直接推 ——
+#   线上永远停在旧版本，而且不报错，你也不会发现。
+#   交给 CI，你就只剩一件事：写文章、git push。
+#
+# 你不需要改 vite.config.js：那边 base 是 './'（相对路径）+ 路由是 hash 模式。
+#   项目站点的地址是 /learning-log/ 而不是 /，但相对路径会自动带上这个前缀，
+#   而 hash 路由（#/...）根本不经过服务器，刷新也不会 404。这两条现在正好兑现。
+name: 部署到 GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # 也可以在仓库的 Actions 页面手动点一下重跑
+
+# GITHUB_TOKEN 的权限。默认权限不够用，不写这三行，
+# deploy 那一步会直接 403，报错信息还看不太出来是权限问题。
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 连着 push 两次时，取消上一次还没跑完的部署。
+# 不写的话两个部署会抢同一个 Pages 环境，排队等，慢的那次还可能覆盖新的。
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # vite 8 要求 node ^20.19.0 || >=22.12.0，22 是其中最省心的
+          node-version: 22
+          cache: npm
+
+      # 用 ci 而不是 install：严格照 package-lock.json 装，
+      # 保证 CI 里装出来的和你本机是同一套版本。用 install 有可能装到更新的小版本。
+      - run: npm ci
+
+      - run: npm run build
+
+      # 顺手把 Pages 打开（enablement），省得你去 Settings 里手动点。
+      # 万一这步因为权限失败，去 Settings → Pages → Source 选 "GitHub Actions" 即可。
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
