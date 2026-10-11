@@ -1,5 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Reader from './components/Reader.vue'
+import About from './components/About.vue'
+import MainLayout from './components/MainLayout.vue'
 
 /**
  * 用 hash 路由（地址里带 #）而不是 history 路由。
@@ -14,8 +16,14 @@ import Reader from './components/Reader.vue'
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', name: 'home', component: Reader, props: { slug: null } },
-    { path: '/:slug', name: 'post', component: Reader, props: true },
+    { path: '/',
+      component: MainLayout,
+      children:[
+        { path:'' ,name:'home' ,component:Reader},
+        { path:':slug' ,name:'post' ,component:Reader}
+      ]
+    },
+    { path: '/about', name: 'about', component: About },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),

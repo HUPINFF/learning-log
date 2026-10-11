@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
 import { findPost, latest } from '../posts.js'
+import SiteFooter from './SiteFooter.vue'
 
 marked.setOptions({ gfm: true, breaks: false })
 
@@ -64,6 +65,9 @@ onUnmounted(() => window.removeEventListener('scroll', updateProgress))
     <div class="post-rule"></div>
 
     <div class="prose" v-html="html"></div>
+
+    <!-- 放在 <article> 里面，才吃得到它的 43rem 正文宽度 -->
+    <SiteFooter />
   </article>
 
   <section v-else class="empty">

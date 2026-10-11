@@ -34,6 +34,16 @@ posts/2026-10-12.md
 
 ---
 
+## 改「关于我」页
+
+自我介绍正文在根目录的 **`about.md`**（不在 `posts/` 里），改完保存页面就变。
+
+页面下方那两块「网站初衷」和「联系方式」写在 [src/components/About.vue](src/components/About.vue)。
+
+页脚那行「最近更新」的日期**不是手写的**——它从最新那篇文章推导，见 [src/components/SiteFooter.vue](src/components/SiteFooter.vue)。写死就会有第二个真相，哪天忘了改就一直在撒谎。
+
+---
+
 ## 本地跑起来
 
 ```bash
@@ -66,16 +76,20 @@ npm run preview
 ## 目录结构
 
 ```
+about.md             ← 「关于我」页的正文
 posts/               ← 你写的东西全在这里，一个日期一个文件
 src/
   posts.js           ← 扫描 posts/、解析标题和日期
   router.js          ← 路由（用 hash 模式，部署到哪都不用额外配置）
   style.css          ← 所有样式
-  App.vue            ← 页面骨架
+  App.vue            ← 页面骨架（顶栏 + RouterView）
   components/
-    Masthead.vue     ← 顶栏（篇数 + 昼夜切换）
+    Masthead.vue     ← 顶栏（站名 + 导航 + 篇数 + 昼夜切换）
+    MainLayout.vue   ← 布局路由：左边时间轴 + 右边正文
     Rail.vue         ← 左侧那条时间轴
     Reader.vue       ← 右侧正文渲染
+    About.vue        ← 「关于我」页
+    SiteFooter.vue   ← 页脚（最近更新）
 ```
 
 ---
@@ -85,3 +99,7 @@ src/
 - **不用中文 webfont**：一套中文字体动辄 5–15MB，为了好看让每个访客下载这么多不值。改用系统字体栈，把辨识度做在排版和动效上。想换字体，加一行 `@fontsource/...` 即可。
 - **hash 路由**（地址里有 `#`）：换来的是扔到任何静态托管都能直接跑，不用配 SPA 回退规则。
 - **`dist/` 和 `node_modules/` 不进 git**，见 `.gitignore`。
+- **手机上索引栏不吸顶**：吸顶时它加上顶栏会常驻吃掉 195px——一块手机屏幕的 23%，
+  而且半透明毛玻璃会让正文从底下透上来，在交界处把字切成两半。
+  改成跟着内容滚走后，阅读区从 649px 回到 786px；代价是想切换文章要滚回顶部。
+  手机上「打开 → 读」才是主路径，这个代价值。

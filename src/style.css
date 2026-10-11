@@ -102,6 +102,15 @@ button {
   -webkit-backdrop-filter: saturate(150%) blur(12px);
 }
 
+/* 站名 + 导航，捆成左边的「一组」。
+   组内间距（28px）明显大于 .brand 内部的 11px —— 靠间距大小区分
+   「这是两个东西」和「这是一个东西的两截」。 */
+.masthead-nav {
+  display: flex;
+  align-items: baseline;
+  gap: 28px;
+}
+
 .brand {
   display: flex;
   align-items: baseline;
@@ -203,6 +212,40 @@ button {
   margin: 0 0 16px 26px;
 }
 
+/* 搜索框：左缩进 26px，和条目文字对齐（条目是 padding-left: 26px）*/
+.rail-search {
+  display: block;
+  width: calc(100% - 26px);
+  margin: 0 0 20px 26px;
+  padding: 5px 0 7px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: .05em;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  transition: border-color .22s var(--ease);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.rail-search::placeholder {
+  color: var(--ink-3);
+  letter-spacing: .05em;
+}
+
+.rail-search:hover { border-bottom-color: var(--ink-3); }
+.rail-search:focus { border-bottom-color: var(--accent); }
+
+/* Chrome / Safari 给 type="search" 自带的圆角和灰色清除按钮，和这套风格不搭 */
+.rail-search::-webkit-search-decoration,
+.rail-search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .rail-list {
   position: relative;
   list-style: none;
@@ -296,6 +339,79 @@ button {
   min-width: 0;
 }
 
+/* 满宽页面（关于我等）：不套 shell 的框，正文自己居中。
+   max-width 里加上左右 padding，正文净宽和 .reader 里的 43rem 对齐。 */
+.page {
+  max-width: calc(43rem + 112px);
+  margin: 0 auto;
+  padding: 62px 56px 180px;
+}
+
+/* 页面底部的说明块：一道细线隔开，小标签 + 一句话。
+   正文的字号/行高/字距刻意和 .prose 对齐，读起来是一口气。 */
+.note {
+  margin-top: 64px;
+  padding-top: 30px;
+  border-top: 1px solid var(--rule);
+  animation: reveal .55s .18s var(--ease) both;
+}
+
+.note-label {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  color: var(--accent);
+}
+
+.note-body {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.95;
+  letter-spacing: .012em;
+  color: var(--ink-2);
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+/* 容器里的多段：段落之间留一点缝，比 <p> 默认的 1em 紧凑 */
+.note-body > * + * { margin-top: .5em; }
+
+/* 联系方式：左边标签、右边值。
+   align-items: baseline 让两种字号按"首行基线"对齐 —— 不用手算 padding 去凑。 */
+.contact {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 12px 22px;
+  align-items: baseline;
+  margin: 0;
+}
+
+.contact dt {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.contact dd {
+  margin: 0;                    /* dd 默认有 40px 缩进，网格里不需要 */
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  letter-spacing: .01em;
+  overflow-wrap: anywhere;      /* 邮箱/网址再长也撑不破这一列 */
+}
+
+.contact a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  transition: border-color .18s;
+}
+.contact a:hover { border-bottom-color: var(--accent); }
+
 article { max-width: 43rem; }
 
 @keyframes rise {
@@ -356,6 +472,16 @@ article { max-width: 43rem; }
 
 .prose > * + * { margin-top: 1.2em; }
 .prose > *:first-child { margin-top: 0; }
+
+/* 文章页的 h1 走 .post-title，从来不经过 .prose，所以这里一直没写。
+   补上兜底：谁再把 markdown 直接塞进 .prose，h1 也不会裸奔。 */
+.prose h1 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.45;
+  color: var(--ink);
+  text-align: left;
+}
 
 .prose h2 {
   margin-top: 2.7em;
@@ -421,6 +547,28 @@ article { max-width: 43rem; }
   line-height: 1.72;
   text-align: left;
   tab-size: 4;
+
+  /* 「这边还有代码」的滑动提示。
+     代码块能横滑，但手机上滚动条是覆盖式的 —— 不滑就不显示，
+     看上去就像代码被硬切了。这里用四层背景自己画出来：
+       ①② 两片实色「盖板」，用 local 附着 → 跟着代码一起滚。
+           滑到那一头时，盖板正好落在可视边缘，把提示盖住 → 自动消失。
+       ③④ 两团渐亮，用 scroll 附着 → 钉死在可视区左右两边。
+     代码没超出时不显示：没有溢出 = local 和 scroll 位置重合 = 盖板恰好盖住提示。
+     盖板(40px，前 50% 实色) 比提示(18px) 宽 —— 保证提示整条都被盖严。
+
+     ⚠️ 提示必须是「变亮」，不能是常规的「投影变暗」：
+        底色 --code-bg 是 #171716（rgb 23,23,22），已经接近纯黑，
+        再叠一层 60% 的黑只有 rgb(9,9,9) —— 差 5% 亮度，屏幕上等于没画。 */
+  background-image:
+    linear-gradient(to right, var(--code-bg) 50%, transparent),
+    linear-gradient(to left,  var(--code-bg) 50%, transparent),
+    linear-gradient(to right, color-mix(in srgb, var(--code-fg) 25%, transparent), transparent),
+    linear-gradient(to left,  color-mix(in srgb, var(--code-fg) 25%, transparent), transparent);
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 18px 100%, 18px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .prose pre code {
@@ -456,6 +604,24 @@ article { max-width: 43rem; }
 
 /* 正文里的日期/数字统一等宽，和左侧时间轴呼应 */
 .prose .tnum { font-family: var(--mono); letter-spacing: 0; }
+
+/* ---------------- 页脚：最近更新 ---------------- */
+
+/* 一行小字，告诉访客这个站的内容最后是什么时候变的。
+   刻意不做成「又一个 .note」：没有分隔线、不抢眼，读完正文才顺手看一眼的东西。
+   字体配方直接抄 .post-meta —— 同一个站里，同一类信息就该长同一个样子。 */
+.site-footer {
+  display: flex;
+  align-items: baseline;      /* 标签和日期基线对齐，将来改字号也不会歪 */
+  gap: 10px;
+  margin-top: 72px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  color: var(--ink-3);
+}
+
+.site-footer-date { color: var(--ink-2); }
 
 /* ---------------- 空状态 ---------------- */
 
@@ -499,21 +665,27 @@ article { max-width: 43rem; }
 @media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); }
 
+  /* 索引栏在手机上不再吸顶。
+     吸顶时它和顶栏加起来常驻吃掉 195px（一块 844px 屏幕的 23%），
+     而且半透明 + 毛玻璃的背景会让正文从底下透上来，在交界处把字切成两半。
+     改为跟着内容滚走：阅读区从 649px 回到 786px。
+     代价是想切换文章要滚回页面顶部 —— 手机上「打开→读」才是主路径，值。 */
   .rail {
-    position: sticky;
-    top: var(--mast-h);
-    z-index: 30;
+    position: static;
     height: auto;
     overflow: visible;
     padding: 14px 18px 12px;
     border-right: none;
     border-bottom: 1px solid var(--rule);
-    background: color-mix(in srgb, var(--paper) 92%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
 
   .rail-label { margin: 0 0 10px; }
+
+  /* 窄屏下时间轴变成横向滑动的条，搜索框也跟着占满整行 */
+  .rail-search {
+    width: 100%;
+    margin: 0 0 14px;
+  }
 
   .rail-list {
     display: flex;
@@ -547,10 +719,46 @@ article { max-width: 43rem; }
   .entry-date { font-size: 11px; }
   .entry a:hover { transform: none; }
 
-  .reader { padding: 34px 22px 120px; }
-  .prose { font-size: 16.5px; }
+  .reader, .page { padding: 34px 22px 120px; }
+  .prose, .note-body { font-size: 16.5px; }
+
+  /* 窄屏下标签和值改成上下排，别硬挤成两列 */
+  .contact { grid-template-columns: 1fr; gap: 3px; }
+  .contact dt { margin-top: 12px; }
+  .contact dt:first-of-type { margin-top: 0; }
   .masthead { padding: 0 18px; }
   .masthead-meta .since { display: none; }
+
+  /* ---- 触控目标 ----
+     手指不是鼠标。44px 是手机上的经验下限，实测原来这些：
+       邮箱/GitHub 链接  高 16px  ← 基本点不中
+       搜索框            高 27px
+       日期 pill         高 32px
+       主题按钮          26×26
+     撑高的都是透明的可点区域，视觉上还是原来那行小字。 */
+  .masthead-nav .brand { padding: 10px 0; }
+  .theme-btn { width: 40px; height: 40px; font-size: 15px; }
+
+  .rail-search { padding: 14px 0; }
+  .entry a { padding: 14px 16px; }
+
+  /* max-width 是保险：inline-block 的元素不会自己折行，
+     万一以后邮箱/网址变长，也不至于撑破这一列 */
+  .contact dd a {
+    display: inline-block;
+    padding: 12px 0;
+    max-width: 100%;
+  }
+}
+
+/* 更窄的手机：顶栏两组加起来自然宽约 470px，再窄就会把中英文都挤成两行，
+   而顶栏高度是写死的 58px —— 字会直接溢出到下面的内容上。
+   先砍两组的英文副标题：它们是装饰，中文才是内容。
+   这个断点比 900px 紧得多，是因为顶栏只受「屏幕宽度」影响，
+   跟时间轴塌不塌没关系，没必要提前动手。 */
+@media (max-width: 560px) {
+  .brand-en { display: none; }
+  .masthead-nav { gap: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
