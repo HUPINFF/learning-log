@@ -1,0 +1,7 @@
+# 统一换行符为 LF：Windows 上编辑、Linux 上构建（Vercel），
+# 不统一的话每次提交 Git 都会警告，diff 也会糊掉
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
